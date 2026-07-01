@@ -1,17 +1,22 @@
 use iced::{
-    Element,
-    widget::{center, column, text},
+    Element, Length,
+    widget::{container, row, text},
 };
 
-use crate::app::message::Message;
+use crate::{
+    app::message::Message,
+    widgets::sidebar::{self, SidebarItem},
+};
 
-pub fn view() -> Element<'static, Message> {
-    center(
-        column![
-            text("Codet").size(40),
-            text("Lightweight IDE, built with Rust and Iced.")
-        ]
-        .spacing(12)
-    )
+pub fn view(selected: SidebarItem) -> Element<'static, Message> {
+    row![
+        sidebar::view(selected).map(Message::Sidebar),
+        container(text("Main content"))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill),
+    ]
+    .height(Length::Fill)
     .into()
 }

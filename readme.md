@@ -1,4 +1,4 @@
-# Codet
+# Codet - A Lightweight Modern IDE
 
 **Codet** is a lightweight, fast, and minimal code editor built for developers who want speed without the bloat.
 
@@ -6,11 +6,11 @@
 
 ---
 
-## ✨ Overview
+## Overview
 
 Codet aims to be a no-nonsense code editor — quick to launch, easy on system resources, and focused on the essentials developers actually use every day. No unnecessary plugins bloating startup time, no sluggish UI — just a clean, responsive editing experience.
 
-## 🎯 Goals
+## Goals
 
 - **Lightweight** — minimal memory and CPU footprint, fast startup
 - **Fast** — instant file open/save, snappy typing and navigation

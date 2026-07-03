@@ -67,7 +67,7 @@ pub fn view(selected: SidebarItem) -> Element<'static, SidebarMessage> {
         .width(Length::Fill)
         .align_x(alignment::Horizontal::Center),
     )
-    .width(Length::Fixed(74.0))
+    .width(Length::Fixed(60.0))
     .height(Length::Fill)
     .style(sidebar_style)
     .into()

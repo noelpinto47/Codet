@@ -2,9 +2,9 @@ use iced::Task;
 
 use crate::widgets::sidebar::SidebarMessage;
 
-use super::{message::Message, state::App};
+use super::{message::Message, state::AppState};
 
-pub fn update(app: &mut App, message: Message) -> Task<Message> {
+pub fn update(app: &mut AppState, message: Message) -> Task<Message> {
     match message {
         Message::Sidebar(SidebarMessage::Pressed(item)) => {
             if app.selected_sidebar == item {
@@ -14,7 +14,10 @@ pub fn update(app: &mut App, message: Message) -> Task<Message> {
                 app.sidebar_open = true;
             }
         }
-    }
 
+        Message::EditorEdit(action) => {
+                app.editor.perform(action);
+        }
+    }
     Task::none()
 }

@@ -1,7 +1,7 @@
 use iced::Element;
 
-use super::{message::Message, state::App};
+use super::{message::Message, state::AppState};
 
-pub fn view(app: &App) -> Element<'_, Message> {
-    crate::views::home::view(app)
+pub fn view(app: &AppState) -> Element<'_, Message> {
+    crate::views::editor::view(app)
 }

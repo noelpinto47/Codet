@@ -20,7 +20,7 @@ pub fn view(selected: SidebarItem) -> Element<'static, Message> {
 
 	let body = column![
 		text(title).size(18),
-		text("Panel content goes here").size(14),
+		text("").size(14),
 	]
 	.spacing(8);
 

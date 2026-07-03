@@ -6,7 +6,7 @@ pub mod view;
 use iced::Theme;
 
 pub fn run() -> iced::Result {
-    iced::application(state::App::default, update::update, view::view)
+    iced::application(state::AppState::default, update::update, view::view)
         .title("Codet")
         .theme(Theme::Dark)
         .run()

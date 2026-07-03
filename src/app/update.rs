@@ -7,7 +7,12 @@ use super::{message::Message, state::App};
 pub fn update(app: &mut App, message: Message) -> Task<Message> {
     match message {
         Message::Sidebar(SidebarMessage::Pressed(item)) => {
-            app.selected_sidebar = item;
+            if app.selected_sidebar == item {
+                app.sidebar_open = !app.sidebar_open;
+            } else {
+                app.selected_sidebar = item;
+                app.sidebar_open = true;
+            }
         }
     }
 

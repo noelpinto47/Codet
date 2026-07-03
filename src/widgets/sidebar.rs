@@ -47,7 +47,7 @@ pub fn view(selected: SidebarItem) -> Element<'static, SidebarMessage> {
             selected,
         ),
     ]
-    .spacing(18)
+    .spacing(10.0)
     .align_x(alignment::Horizontal::Center);
 
     let bottom_icon = icon_button(

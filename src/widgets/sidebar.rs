@@ -1,7 +1,7 @@
 use iced::{
     alignment,
-    widget::{button, column, container, svg, Space},
-    Element, Length,
+    widget::{button, column, container, row, svg, Space},
+    Background, Color, Element, Length,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -56,20 +56,31 @@ pub fn view(selected: SidebarItem) -> Element<'static, SidebarMessage> {
         selected,
     );
 
-    container(
-        column![
-            Space::new().height(Length::Fixed(18.0)),
-            top_icons,
-            Space::new().height(Length::Fill),
-            bottom_icon,
-            Space::new().height(Length::Fixed(18.0)),
-        ]
-        .width(Length::Fill)
-        .align_x(alignment::Horizontal::Center),
-    )
-    .width(Length::Fixed(60.0))
+    row![
+        container(
+            column![
+                Space::new().height(Length::Fixed(18.0)),
+                top_icons,
+                Space::new().height(Length::Fill),
+                bottom_icon,
+                Space::new().height(Length::Fixed(18.0)),
+            ]
+            .width(Length::Fill)
+            .align_x(alignment::Horizontal::Center),
+        )
+        .width(Length::Fixed(60.0))
+        .height(Length::Fill)
+        .style(sidebar_style),
+
+        container("")
+        .width(1)
+        .height(Length::Fill)
+        .style(|_theme| iced::widget::container::Style {
+            background: Some(Background::Color(Color::from_rgb8(40, 40, 52))),
+            ..Default::default()
+        }),
+    ]
     .height(Length::Fill)
-    .style(sidebar_style)
     .into()
 }
 

@@ -7,7 +7,7 @@ pub struct App {
 impl Default for App {
     fn default() -> Self {
         Self {
-            selected_sidebar: SidebarItem::Editor,
+            selected_sidebar: SidebarItem::Files,
         }
     }
 }

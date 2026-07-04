@@ -1,5 +1,7 @@
 # Codet - A Lightweight Modern IDE
 
+![Codet icon](https://github.com/noelpinto47/Codet/blob/main/assets/icon.png)
+
 **Codet** is a lightweight, fast, and minimal code editor built for developers who want speed without the bloat.
 
 > ⚠️ **Status: Under active development.** Codet is not yet feature-complete or production-ready. Expect frequent changes, missing features, and breaking updates.

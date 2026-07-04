@@ -6,8 +6,8 @@ use iced::{
 use crate::{
     app::message::Message,
     app::state::AppState,
-    views::settings,
-    widgets::{extended_sidebar, sidebar, statusbar},
+    views::{panels::main_panel, settings},
+    widgets::{extended_sidebar, sidebar, status_bar},
 };
 
 const CHROME_BG: Color = Color::from_rgb8(19, 19, 23);
@@ -37,7 +37,7 @@ pub fn view(app: &AppState) -> Element<'_, Message> {
             container(main_area)
                 .width(Length::Fill)
                 .height(Length::Fill),
-            statusbar::view(app),
+            status_bar::view(app),
         ]
     )
     .height(Length::Fill)
@@ -104,7 +104,20 @@ fn main_content(app: &AppState) -> iced::widget::Container<'_, Message> {
         snap: false,
     });
 
-    container(column![tabs, editor])
+    let content = if app.show_panel {
+        iced::widget::column![
+            tabs,
+            editor,
+            main_panel::view(app),
+        ]
+    } else {
+        iced::widget::column![
+            tabs,
+            editor,
+        ]
+    };
+
+    container(content)
         .width(Length::Fill)
         .height(Length::Fill)
         .style(|_theme| iced::widget::container::Style {

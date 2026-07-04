@@ -1,6 +1,6 @@
 use iced::{
     alignment,
-    widget::{container, row, text},
+    widget::{button,container, row, text, Space},
     Background, Border, Color, Length, Shadow,
 };
 
@@ -22,7 +22,39 @@ pub fn view(_app: &AppState) -> iced::widget::Container<'_, Message> {
     .spacing(18)
     .align_y(alignment::Vertical::Center);
 
-    container(left)
+    let right = row![
+        button(
+            text("terminal")
+                .size(14)
+                .color(Color::from_rgb8(170, 170, 180))
+        )
+        .on_press(Message::ToggleTerminal)
+        .style(|_theme, _status| iced::widget::button::Style {
+            background: None,
+            text_color: Color::from_rgb8(170, 170, 180),
+            border: Border {
+                width: 0.0,
+                radius: 0.0.into(),
+                color: Color::TRANSPARENT,
+            },
+            shadow: Shadow::default(),
+            snap: false,
+        }),
+    ]
+    .spacing(12)
+    .align_y(alignment::Vertical::Center);
+
+    let content = row![
+        left,
+        Space::new().width(Length::Fill),
+        right,
+        Space::new().width(Length::Fixed(10.0)),
+    ]
+    .width(Length::Fill)
+    .height(Length::Fill)
+    .align_y(alignment::Vertical::Center);
+
+    container(content)
         .width(Length::Fill)
         .height(Length::Fixed(30.0))
         .padding([0, 12])
@@ -43,7 +75,7 @@ fn item<'a>(label: &'a str, color: Option<Color>) -> iced::widget::Container<'a,
     container(
         text(label)
             .size(14)
-            .color(color.unwrap_or(STATUS_TEXT))
+            .color(color.unwrap_or(STATUS_TEXT)),
     )
     .height(Length::Fixed(30.0))
     .center_y(Length::Fill)

@@ -7,7 +7,7 @@ use crate::{
     app::message::Message,
     app::state::AppState,
     views::settings,
-    widgets::{extended_sidebar, sidebar},
+    widgets::{extended_sidebar, sidebar, statusbar},
 };
 
 const CHROME_BG: Color = Color::from_rgb8(19, 19, 23);
@@ -19,7 +19,7 @@ const TAB_INACTIVE_BG: Color = Color::from_rgb8(24, 24, 30);
 const TAB_BORDER_BLUE: Color = Color::from_rgb8(54, 116, 255);
 
 pub fn view(app: &AppState) -> Element<'_, Message> {
-    let content = if app.sidebar_open {
+    let main_area = if app.sidebar_open {
         row![
             sidebar::view(app.selected_sidebar).map(Message::Sidebar),
             extended_sidebar::view(app.selected_sidebar),
@@ -32,16 +32,23 @@ pub fn view(app: &AppState) -> Element<'_, Message> {
         ]
     };
 
-    let base = container(content)
-        .height(Length::Fill)
-        .width(Length::Fill)
-        .style(|_theme| iced::widget::container::Style {
-            background: Some(Background::Color(CHROME_BG)),
-            text_color: None,
-            border: Border::default(),
-            shadow: Shadow::default(),
-            snap: false,
-        });
+    let base = container(
+        column![
+            container(main_area)
+                .width(Length::Fill)
+                .height(Length::Fill),
+            statusbar::view(app),
+        ]
+    )
+    .height(Length::Fill)
+    .width(Length::Fill)
+    .style(|_theme| iced::widget::container::Style {
+        background: Some(Background::Color(CHROME_BG)),
+        text_color: None,
+        border: Border::default(),
+        shadow: Shadow::default(),
+        snap: false,
+    });
 
     if app.show_settings {
         settings::modal(base)

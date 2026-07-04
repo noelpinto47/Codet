@@ -1,23 +1,34 @@
-use iced::Task;
+use crate::{
+    app::{message::Message, state::AppState},
+    widgets::sidebar::{SidebarItem, SidebarMessage},
+};
 
-use crate::widgets::sidebar::SidebarMessage;
-
-use super::{message::Message, state::AppState};
-
-pub fn update(app: &mut AppState, message: Message) -> Task<Message> {
+pub fn update(app: &mut AppState, message: Message) {
     match message {
-        Message::Sidebar(SidebarMessage::Pressed(item)) => {
-            if app.selected_sidebar == item {
-                app.sidebar_open = !app.sidebar_open;
-            } else {
-                app.selected_sidebar = item;
-                app.sidebar_open = true;
-            }
+        Message::EditorEdit(action) => {
+            app.editor.perform(action);
         }
 
-        Message::EditorEdit(action) => {
-                app.editor.perform(action);
+        Message::Sidebar(sidebar_message) => match sidebar_message {
+            SidebarMessage::Pressed(item) => {
+                if app.selected_sidebar == item {
+                    app.sidebar_open = !app.sidebar_open;
+                } else {
+                    app.selected_sidebar = item;
+                    app.sidebar_open = true;
+                }
+
+                if item == SidebarItem::Settings {
+                    app.show_settings = true;
+                } else {
+                    app.selected_sidebar = item;
+                    app.show_settings = false;
+                }
+            }
+        },
+
+        Message::CloseSettings => {
+            app.show_settings = false;
         }
     }
-    Task::none()
 }

@@ -6,6 +6,7 @@ use iced::{
 use crate::{
     app::message::Message,
     app::state::AppState,
+    views::settings,
     widgets::{extended_sidebar, sidebar},
 };
 
@@ -31,7 +32,7 @@ pub fn view(app: &AppState) -> Element<'_, Message> {
         ]
     };
 
-    container(content)
+    let base = container(content)
         .height(Length::Fill)
         .width(Length::Fill)
         .style(|_theme| iced::widget::container::Style {
@@ -40,8 +41,13 @@ pub fn view(app: &AppState) -> Element<'_, Message> {
             border: Border::default(),
             shadow: Shadow::default(),
             snap: false,
-        })
-        .into()
+        });
+
+    if app.show_settings {
+        settings::modal(base)
+    } else {
+        base.into()
+    }
 }
 
 fn main_content(app: &AppState) -> iced::widget::Container<'_, Message> {
@@ -59,11 +65,7 @@ fn main_content(app: &AppState) -> iced::widget::Container<'_, Message> {
     .style(|_theme| iced::widget::container::Style {
         background: Some(Background::Color(TABBAR_BG)),
         text_color: None,
-        border: Border {
-            width: 0.0,
-            radius: 0.0.into(),
-            color: Color::TRANSPARENT,
-        },
+        border: Border::default(),
         shadow: Shadow::default(),
         snap: false,
     });

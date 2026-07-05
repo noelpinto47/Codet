@@ -18,6 +18,7 @@ pub struct AppState {
     pub show_settings: bool,
     pub show_panel: bool,
     pub active_panel: PanelTab,
+    pub show_file_menu: bool,
 }
 
 impl Default for AppState {
@@ -29,6 +30,7 @@ impl Default for AppState {
             show_settings: false,
             show_panel: false,
             active_panel: PanelTab::Terminal,
+            show_file_menu: false,
         }
     }
 }

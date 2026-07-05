@@ -1,6 +1,7 @@
-use iced::widget::text_editor;
-use crate::widgets::sidebar::SidebarMessage;
 use crate::app::state::PanelTab;
+use crate::widgets::sidebar::SidebarMessage;
+use iced::widget::text_editor;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -10,4 +11,7 @@ pub enum Message {
     ToggleTerminal,
     OpenPanel(PanelTab),
     ClosePanel,
+    ToggleFileMenu,
+    OpenFolderClicked,
+    FolderOpened(Option<PathBuf>),
 }

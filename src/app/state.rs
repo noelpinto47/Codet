@@ -1,6 +1,7 @@
 use iced::widget::text_editor;
 
 use crate::widgets::sidebar::SidebarItem;
+use crate::models::file_tree::{FileNode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PanelTab {
@@ -18,6 +19,7 @@ pub struct AppState {
     pub show_settings: bool,
     pub show_panel: bool,
     pub active_panel: PanelTab,
+    pub file_tree: Vec<FileNode>,
     pub show_file_menu: bool,
 }
 
@@ -30,6 +32,7 @@ impl Default for AppState {
             show_settings: false,
             show_panel: false,
             active_panel: PanelTab::Terminal,
+            file_tree: Vec::new(),
             show_file_menu: false,
         }
     }

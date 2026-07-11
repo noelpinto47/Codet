@@ -14,4 +14,6 @@ pub enum Message {
     ToggleFileMenu,
     OpenFolderClicked,
     FolderOpened(Option<PathBuf>),
+    ToggleFolder(Vec<usize>),
+    OpenFile(std::path::PathBuf)
 }

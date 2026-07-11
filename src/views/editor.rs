@@ -22,7 +22,7 @@ pub fn view(app: &AppState) -> Element<'_, Message> {
     let main_area = if app.sidebar_open {
         row![
             sidebar::view(app.selected_sidebar).map(Message::Sidebar),
-            extended_sidebar::view(app.selected_sidebar),
+            extended_sidebar::view(app),
             main_content(app),
         ]
     } else {

@@ -69,7 +69,7 @@ fn menu_button(label: &str, active: bool) -> iced::widget::Button<'_, Message> {
         .padding([4, 10])
         .style(move |_theme, _status| iced::widget::button::Style {
             background: if active {
-                Some(Background::Color(Color::from_rgb8(255, 255, 255)))
+                Some(Background::Color(Color::from_rgb8(25, 25, 25)))
             } else {
                 None
             },

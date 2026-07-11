@@ -1,13 +1,13 @@
 use iced::{
-    widget::{column, container, row, text, text_editor},
     Background, Border, Color, Element, Length, Shadow,
+    widget::{Space, column, container, mouse_area, opaque, row, stack, text, text_editor},
 };
 
 use crate::{
     app::message::Message,
     app::state::AppState,
     views::{panels::main_panel, settings},
-    widgets::{extended_sidebar, sidebar, status_bar},
+    widgets::{extended_sidebar, menu_bar, sidebar, status_bar},
 };
 
 const CHROME_BG: Color = Color::from_rgb8(19, 19, 23);
@@ -32,14 +32,13 @@ pub fn view(app: &AppState) -> Element<'_, Message> {
         ]
     };
 
-    let base = container(
-        column![
-            container(main_area)
-                .width(Length::Fill)
-                .height(Length::Fill),
-            status_bar::view(app),
-        ]
-    )
+    let base = container(column![
+        menu_bar::view(app.show_file_menu),
+        container(main_area)
+            .width(Length::Fill)
+            .height(Length::Fill),
+        status_bar::view(app),
+    ])
     .height(Length::Fill)
     .width(Length::Fill)
     .style(|_theme| iced::widget::container::Style {
@@ -52,6 +51,21 @@ pub fn view(app: &AppState) -> Element<'_, Message> {
 
     if app.show_settings {
         settings::modal(base)
+    } else if app.show_file_menu {
+        stack![
+            base,
+            mouse_area(
+                container(Space::new())
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+            )
+            .on_press(Message::ToggleFileMenu),
+            container(opaque(menu_bar::file_dropdown()))
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .padding([32, 10])
+        ]
+        .into()
     } else {
         base.into()
     }
@@ -65,7 +79,7 @@ fn main_content(app: &AppState) -> iced::widget::Container<'_, Message> {
             tab("builders.py", false),
         ]
         .spacing(6)
-        .padding([6, 10])
+        .padding([6, 10]),
     )
     .width(Length::Fill)
     .height(Length::Fixed(48.0))
@@ -92,7 +106,7 @@ fn main_content(app: &AppState) -> iced::widget::Container<'_, Message> {
                 placeholder: Color::from_rgb8(100, 100, 100),
                 value: Color::from_rgb8(255, 255, 255),
                 selection: Color::from_rgb8(0, 120, 215),
-            })
+            }),
     )
     .width(Length::Fill)
     .height(Length::Fill)
@@ -105,16 +119,9 @@ fn main_content(app: &AppState) -> iced::widget::Container<'_, Message> {
     });
 
     let content = if app.show_panel {
-        iced::widget::column![
-            tabs,
-            editor,
-            main_panel::view(app),
-        ]
+        iced::widget::column![tabs, editor, main_panel::view(app),]
     } else {
-        iced::widget::column![
-            tabs,
-            editor,
-        ]
+        iced::widget::column![tabs, editor,]
     };
 
     container(content)
@@ -139,7 +146,7 @@ fn tab<'a>(title: &'a str, active: bool) -> iced::widget::Container<'a, Message>
             }),
             text("×").size(14).color(Color::from_rgb8(120, 120, 130)),
         ]
-        .spacing(10)
+        .spacing(10),
     )
     .padding([10, 14])
     .style(move |_theme| iced::widget::container::Style {

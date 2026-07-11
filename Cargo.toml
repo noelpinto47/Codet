@@ -5,10 +5,10 @@ edition = "2024"
 
 [dependencies]
 iced = { version = "0.14.0", features = ["svg", "image"] }
+rfd = "0.15"
 
 [package.metadata.bundle]
 name = "Codet"
 identifier = "com.noelpinto.codet"
 icon = ["assets/icon.icns"]
 category = "Developer Tool"
-short_description = "A minimal code editor"

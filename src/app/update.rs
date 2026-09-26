@@ -8,6 +8,7 @@ use crate::{
 use iced::{window, Task};
 use std::fs;
 use std::path::Path;
+use strip_ansi_escapes::strip_str;
 
 pub fn update(app: &mut AppState, message: Message) -> Task<Message> {
     match message {
@@ -154,6 +155,36 @@ pub fn update(app: &mut AppState, message: Message) -> Task<Message> {
 
         Message::WindowClose => {
             window::latest().and_then(window::close)
+        }
+
+        Message::TerminalStarted(pty, writer) => {
+            app.terminal_pty = Some(pty.0);       // ← .0 to unwrap PtyHandle
+            app.terminal_writer = Some(writer.0); // ← .0 to unwrap WriterHandle
+            Task::none()
+        }
+
+        Message::TerminalOutput(data) => {
+            let clean = strip_str(&data);
+            app.terminal_output.push_str(&clean);
+            if app.terminal_output.len() > 50_000 {
+                let trim_at = app.terminal_output.len() - 50_000;
+                app.terminal_output = app.terminal_output[trim_at..].to_string();
+            }
+            Task::none()
+        }
+
+        Message::TerminalInputChanged(s) => {
+            app.terminal_input = s;
+            Task::none()
+        }
+
+        Message::TerminalInputSubmit => {
+            if let Some(writer) = &app.terminal_writer {
+                let mut w = writer.lock().unwrap();
+                let _ = write!(w, "{}\n", app.terminal_input);
+            }
+            app.terminal_input.clear();
+            Task::none()
         }
     }
 }

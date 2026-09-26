@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 use iced::widget::text_editor;
 use iced_highlighter::Settings as HighlightSettings;
@@ -32,6 +33,11 @@ pub struct AppState {
     // Tabs
     pub open_tabs: Vec<OpenTab>,
     pub active_tab_index: usize,
+    // Terminal
+    pub terminal_output: String,
+    pub terminal_input: String,
+    pub terminal_pty: Option<Arc<Mutex<Box<dyn portable_pty::MasterPty + Send>>>>,
+    pub terminal_writer: Option<Arc<Mutex<Box<dyn std::io::Write + Send>>>>,
 }
 
 impl Default for AppState {
@@ -49,6 +55,10 @@ impl Default for AppState {
             highlight_settings: default_settings(),
             open_tabs: Vec::new(),
             active_tab_index: 0,
+            terminal_output: String::new(),
+            terminal_input: String::new(),
+            terminal_pty: None,
+            terminal_writer: None,
         }
     }
 }

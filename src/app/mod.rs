@@ -2,6 +2,7 @@ pub mod message;
 pub mod state;
 pub mod update;
 pub mod view;
+pub mod subscription;
 
 use iced::{window, Size, Theme};
 
@@ -11,6 +12,7 @@ pub fn run() -> iced::Result {
 
     iced::application(state::AppState::default, update::update, view::view)
         .title("Codet")
+        .subscription(|_state| subscription::terminal_subscription())
         .window(window::Settings {
             icon: Some(icon),
             decorations: false,

@@ -5,6 +5,7 @@ use crate::{
     widgets::sidebar::{SidebarItem, SidebarMessage},
 };
 use iced::Task;
+use iced::widget::text_editor;
 use std::fs;
 use std::path::Path;
 
@@ -94,15 +95,11 @@ pub fn update(app: &mut AppState, message: Message) -> Task<Message> {
         Message::OpenFile(path) => {
             match std::fs::read_to_string(&path) {
                 Ok(contents) => {
-                    // Preferred: if Content implements From<String>
-                    app.editor = iced::widget::text_editor::Content::with_text(&contents);
-                    // If that constructor doesn't exist in your iced version,
-                    // try whatever constructor your iced exposes (e.g. `new_with_value`),
-                    // or perform editor actions to insert the text.
+                    app.editor = text_editor::Content::with_text(&contents);
+                    app.highlight_settings = crate::highlight::settings_for_path(&path);
+                    app.active_file_path = Some(path);
                 }
-                Err(err) => {
-                    eprintln!("Failed to open {}: {}", path.display(), err);
-                }
+                Err(err) => eprintln!("Failed to open {}: {}", path.display(), err),
             }
             Task::none()
         }

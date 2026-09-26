@@ -2,6 +2,7 @@ use iced::{
     Background, Border, Color, Element, Length, Shadow,
     widget::{Space, column, container, mouse_area, opaque, row, stack, text, text_editor},
 };
+use iced_highlighter::Highlighter;
 
 use crate::{
     app::message::Message,
@@ -12,7 +13,6 @@ use crate::{
 
 const CHROME_BG: Color = Color::from_rgb8(19, 19, 23);
 const EDITOR_BG: Color = Color::from_rgb8(30, 30, 36);
-
 const TABBAR_BG: Color = Color::from_rgb8(20, 20, 26);
 const TAB_ACTIVE_BG: Color = Color::from_rgb8(30, 30, 40);
 const TAB_INACTIVE_BG: Color = Color::from_rgb8(24, 24, 30);
@@ -96,6 +96,12 @@ fn main_content(app: &AppState) -> iced::widget::Container<'_, Message> {
             .placeholder("Start typing...")
             .on_action(Message::EditorEdit)
             .height(Length::Fill)
+            // ── Syntax highlighting ──────────────────────────────────────────
+            .highlight_with::<Highlighter>(
+                app.highlight_settings.clone(),
+                |highlight, _theme| highlight.to_format(),
+            )
+            // ────────────────────────────────────────────────────────────────
             .style(|_theme, _status| iced::widget::text_editor::Style {
                 background: Background::Color(EDITOR_BG),
                 border: Border {

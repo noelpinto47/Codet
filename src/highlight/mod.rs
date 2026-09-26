@@ -1,6 +1,6 @@
 use std::path::Path;
 
-pub use iced_highlighter::{Highlight, Highlighter, Settings, Theme};
+pub use iced_highlighter::{Settings, Theme};
 
 // ── Token detection (file extension → iced_highlighter token) ────────────────
 // iced_highlighter matches `token` against file extensions, not language names.

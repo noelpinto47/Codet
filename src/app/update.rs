@@ -1,11 +1,11 @@
 use crate::app::state::PanelTab;
-use crate::models::file_tree::FileNode; 
+use crate::models::file_tree::FileNode;
+use crate::models::open_tab::OpenTab;
 use crate::{
     app::{message::Message, state::AppState},
     widgets::sidebar::{SidebarItem, SidebarMessage},
 };
-use iced::Task;
-use iced::widget::text_editor;
+use iced::{window, Task};
 use std::fs;
 use std::path::Path;
 
@@ -24,14 +24,12 @@ pub fn update(app: &mut AppState, message: Message) -> Task<Message> {
                     app.selected_sidebar = item;
                     app.sidebar_open = true;
                 }
-
                 if item == SidebarItem::Settings {
                     app.show_settings = true;
                 } else {
                     app.selected_sidebar = item;
                     app.show_settings = false;
                 }
-
                 Task::none()
             }
         },
@@ -62,22 +60,19 @@ pub fn update(app: &mut AppState, message: Message) -> Task<Message> {
             app.show_file_menu = false;
             Task::perform(
                 async {
-                    let path = rfd::AsyncFileDialog::new()
+                    rfd::AsyncFileDialog::new()
                         .set_title("Open Folder")
                         .pick_folder()
                         .await
-                        .map(|p| p.path().to_path_buf());
-                    path
+                        .map(|p| p.path().to_path_buf())
                 },
-                |path| Message::FolderOpened(path),
+                Message::FolderOpened,
             )
         }
 
         Message::FolderOpened(path) => {
             if let Some(path) = path {
                 app.file_tree = build_file_nodes(&path);
-            } else {
-                println!("folder selection cancelled.");
             }
             Task::none()
         }
@@ -93,9 +88,15 @@ pub fn update(app: &mut AppState, message: Message) -> Task<Message> {
         }
 
         Message::OpenFile(path) => {
-            match std::fs::read_to_string(&path) {
+            match fs::read_to_string(&path) {
                 Ok(contents) => {
-                    app.editor = text_editor::Content::with_text(&contents);
+                    if let Some(idx) = app.open_tabs.iter().position(|t| t.path == path) {
+                        app.active_tab_index = idx;
+                    } else {
+                        app.open_tabs.push(OpenTab::new(path.clone()));
+                        app.active_tab_index = app.open_tabs.len() - 1;
+                    }
+                    app.editor = iced::widget::text_editor::Content::with_text(&contents);
                     app.highlight_settings = crate::highlight::settings_for_path(&path);
                     app.active_file_path = Some(path);
                 }
@@ -103,56 +104,93 @@ pub fn update(app: &mut AppState, message: Message) -> Task<Message> {
             }
             Task::none()
         }
+
+        Message::SwitchTab(index) => {
+            if let Some(tab) = app.open_tabs.get(index) {
+                let path = tab.path.clone();
+                if let Ok(contents) = fs::read_to_string(&path) {
+                    app.active_tab_index = index;
+                    app.editor = iced::widget::text_editor::Content::with_text(&contents);
+                    app.highlight_settings = crate::highlight::settings_for_path(&path);
+                    app.active_file_path = Some(path);
+                }
+            }
+            Task::none()
+        }
+
+        Message::CloseTab(index) => {
+            if index < app.open_tabs.len() {
+                app.open_tabs.remove(index);
+                if app.open_tabs.is_empty() {
+                    app.editor = iced::widget::text_editor::Content::new();
+                    app.active_file_path = None;
+                    app.highlight_settings = crate::highlight::default_settings();
+                    app.active_tab_index = 0;
+                } else {
+                    app.active_tab_index = app.active_tab_index.min(app.open_tabs.len() - 1);
+                    let path = app.open_tabs[app.active_tab_index].path.clone();
+                    if let Ok(contents) = fs::read_to_string(&path) {
+                        app.editor = iced::widget::text_editor::Content::with_text(&contents);
+                        app.highlight_settings = crate::highlight::settings_for_path(&path);
+                        app.active_file_path = Some(path);
+                    }
+                }
+            }
+            Task::none()
+        }
+
+        // ── Window controls ───────────────────────────────────────────────────────────
+        Message::WindowDrag => {
+            window::latest().and_then(window::drag)
+        }
+
+        Message::WindowMinimize => {
+            window::latest().and_then(|id| window::minimize(id, true))
+        }
+
+        Message::WindowMaximize => {
+            window::latest().and_then(window::toggle_maximize)
+        }
+
+        Message::WindowClose => {
+            window::latest().and_then(window::close)
+        }
     }
 }
 
-fn toggle_folder_at_path(nodes: &mut [crate::models::file_tree::FileNode], path: &[usize]) {
-    if path.is_empty() {
-        return;
-    }
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-    let index = path[0];
-
-    if let Some(node) = nodes.get_mut(index) {
+fn toggle_folder_at_path(nodes: &mut [FileNode], path: &[usize]) {
+    if path.is_empty() { return; }
+    if let Some(node) = nodes.get_mut(path[0]) {
         match node {
-            crate::models::file_tree::FileNode::Folder {
-                expanded,
-                children,
-                ..
-            } => {
-                if path.len() == 1 {
-                    *expanded = !*expanded;
-                } else {
-                    toggle_folder_at_path(children, &path[1..]);
-                }
+            FileNode::Folder { expanded, children, .. } => {
+                if path.len() == 1 { *expanded = !*expanded; }
+                else { toggle_folder_at_path(children, &path[1..]); }
             }
-            crate::models::file_tree::FileNode::File { .. } => {}
+            FileNode::File { .. } => {}
         }
     }
 }
 
 fn build_file_nodes(path: &Path) -> Vec<FileNode> {
     let mut nodes = Vec::new();
-
     if let Ok(entries) = fs::read_dir(path) {
         let mut entries: Vec<_> = entries.filter_map(Result::ok).collect();
         entries.sort_by_key(|e| e.file_name());
-
         for entry in entries {
             let name = entry.file_name().to_string_lossy().into_owned();
             let p = entry.path();
             if p.is_dir() {
-                let children = build_file_nodes(&p);
                 nodes.push(FileNode::Folder {
                     name,
                     expanded: false,
-                    children,
+                    children: build_file_nodes(&p),
                 });
             } else {
                 nodes.push(FileNode::File { name, path: p });
             }
         }
     }
-
     nodes
 }

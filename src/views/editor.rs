@@ -72,12 +72,17 @@ pub fn view(app: &AppState) -> Element<'_, Message> {
 }
 
 fn main_content(app: &AppState) -> iced::widget::Container<'_, Message> {
-    let tabs = container(
-        row![
-            tab("Main.js", true),
-            tab(".gitignore", false),
-            tab("builders.py", false),
-        ]
+        let tabs = container(
+        row(
+            app.open_tabs
+                .iter()
+                .enumerate()
+                .map(|(i, tab)| {
+                    let is_active = i == app.active_tab_index;
+                    dynamic_tab(&tab.label, i, is_active)
+                })
+                .collect::<Vec<_>>(),
+        )
         .spacing(6)
         .padding([6, 10]),
     )
@@ -142,36 +147,33 @@ fn main_content(app: &AppState) -> iced::widget::Container<'_, Message> {
         })
 }
 
-fn tab<'a>(title: &'a str, active: bool) -> iced::widget::Container<'a, Message> {
+fn dynamic_tab<'a>(title: &'a str, index: usize, active: bool) -> Element<'a, Message> {
     container(
         row![
-            text(title).size(14).color(if active {
-                Color::from_rgb8(140, 180, 255)
-            } else {
-                Color::from_rgb8(170, 170, 180)
-            }),
-            text("×").size(14).color(Color::from_rgb8(120, 120, 130)),
+            mouse_area(
+                text(title).size(14).color(if active {
+                    Color::from_rgb8(140, 180, 255)
+                } else {
+                    Color::from_rgb8(170, 170, 180)
+                })
+            )
+            .on_press(Message::SwitchTab(index)),
+            mouse_area(
+                text("×").size(14).color(Color::from_rgb8(120, 120, 130))
+            )
+            .on_press(Message::CloseTab(index)),
         ]
         .spacing(10),
     )
     .padding([10, 14])
     .style(move |_theme| iced::widget::container::Style {
-        background: Some(Background::Color(if active {
-            TAB_ACTIVE_BG
-        } else {
-            TAB_INACTIVE_BG
-        })),
-        text_color: None,
+        background: Some(Background::Color(if active { TAB_ACTIVE_BG } else { TAB_INACTIVE_BG })),
         border: Border {
             width: if active { 1.0 } else { 0.0 },
             radius: 10.0.into(),
-            color: if active {
-                TAB_BORDER_BLUE
-            } else {
-                Color::TRANSPARENT
-            },
+            color: if active { TAB_BORDER_BLUE } else { Color::TRANSPARENT },
         },
-        shadow: Shadow::default(),
-        snap: false,
+        ..Default::default()
     })
+    .into()
 }

@@ -1,33 +1,68 @@
 use iced::{
-    Background, Border, Color, Element, Length, Shadow, alignment,
-    widget::{button, column, container, row, text},
+    Background, Border, Color, Element, Length, Padding, Shadow, alignment,
+    widget::{button, column, container, mouse_area, row, text, Space},
 };
 
 use crate::app::message::Message;
 
-const MENUBAR_BG: Color = Color::from_rgb8(16, 16, 20);
+// ── Colors ────────────────────────────────────────────────────────────────────
+
+const TITLEBAR_BG: Color = Color::from_rgb8(16, 16, 20);
 const MENU_TEXT: Color = Color::from_rgb8(170, 170, 180);
 const DROPDOWN_BG: Color = Color::from_rgb8(20, 20, 28);
 const DROPDOWN_BORDER: Color = Color::from_rgb8(50, 50, 60);
 const DROPDOWN_TEXT: Color = Color::from_rgb8(190, 190, 200);
 const DROPDOWN_MUTED: Color = Color::from_rgb8(100, 100, 110);
 
+const CLOSE_COLOR: Color = Color::from_rgb8(255, 95, 87);
+const MINIMIZE_COLOR: Color = Color::from_rgb8(255, 189, 46);
+const MAXIMIZE_COLOR: Color = Color::from_rgb8(40, 200, 64);
+
+// ── Public view ───────────────────────────────────────────────────────────────
+
 pub fn view(show_file_menu: bool) -> Element<'static, Message> {
-    let items = row![
+    // macOS traffic lights
+    let traffic_lights = row![
+        traffic_light(CLOSE_COLOR,    Message::WindowClose),
+        traffic_light(MINIMIZE_COLOR, Message::WindowMinimize),
+        traffic_light(MAXIMIZE_COLOR, Message::WindowMaximize),
+    ]
+    .spacing(8)
+    .align_y(alignment::Vertical::Center)
+    .padding(Padding::from([0u16, 16]));
+
+    // Menu items
+    let menu_items = row![
         menu_button("File", show_file_menu),
         menu_label("Edit"),
         menu_label("View"),
         menu_label("Help"),
     ]
     .spacing(4)
-    .align_y(alignment::Vertical::Center)
-    .padding([0, 10]);
+    .align_y(alignment::Vertical::Center);
 
-    container(items)
+    // App name — right side
+    let app_title = container(
+        text("Codet")
+            .size(13)
+            .color(Color::from_rgb8(100, 100, 110)),
+    )
+    .padding(Padding::from([0u16, 16]));
+
+    // Drag region fills the space between menu items and title
+    let drag_region = mouse_area(
+        Space::new().width(Length::Fill).height(Length::Fill),
+    )
+    .on_press(Message::WindowDrag);
+
+    let bar = row![traffic_lights, menu_items, drag_region, app_title]
+        .align_y(alignment::Vertical::Center);
+
+    container(bar)
         .width(Length::Fill)
-        .height(Length::Fixed(32.0))
+        .height(Length::Fixed(40.0))
         .style(|_theme| iced::widget::container::Style {
-            background: Some(Background::Color(MENUBAR_BG)),
+            background: Some(Background::Color(TITLEBAR_BG)),
             text_color: Some(MENU_TEXT),
             border: Border::default(),
             shadow: Shadow::default(),
@@ -47,6 +82,7 @@ pub fn file_dropdown() -> Element<'static, Message> {
     ]
     .spacing(2)
     .padding(4);
+
     container(items)
         .width(Length::Fixed(200.0))
         .style(|_theme| iced::widget::container::Style {
@@ -63,13 +99,36 @@ pub fn file_dropdown() -> Element<'static, Message> {
         .into()
 }
 
+// ── Traffic light ─────────────────────────────────────────────────────────────
+
+fn traffic_light(color: Color, msg: Message) -> Element<'static, Message> {
+    button(Space::new())
+        .width(Length::Fixed(12.0))
+        .height(Length::Fixed(12.0))
+        .on_press(msg)
+        .style(move |_theme, _status| iced::widget::button::Style {
+            background: Some(Background::Color(color)),
+            border: Border {
+                radius: 6.0.into(),
+                width: 0.0,
+                color: Color::TRANSPARENT,
+            },
+            text_color: Color::TRANSPARENT,
+            shadow: Shadow::default(),
+            snap: false,
+        })
+        .into()
+}
+
+// ── Menu buttons ──────────────────────────────────────────────────────────────
+
 fn menu_button(label: &str, active: bool) -> iced::widget::Button<'_, Message> {
     button(text(label).size(13).color(MENU_TEXT))
         .on_press(Message::ToggleFileMenu)
-        .padding([4, 10])
+        .padding([4u16, 10])
         .style(move |_theme, _status| iced::widget::button::Style {
             background: if active {
-                Some(Background::Color(Color::from_rgb8(25, 25, 25)))
+                Some(Background::Color(Color::from_rgb8(30, 30, 38)))
             } else {
                 None
             },
@@ -86,7 +145,7 @@ fn menu_button(label: &str, active: bool) -> iced::widget::Button<'_, Message> {
 
 fn menu_label(label: &str) -> iced::widget::Button<'_, Message> {
     button(text(label).size(13).color(MENU_TEXT))
-        .padding([4, 10])
+        .padding([4u16, 10])
         .style(|_theme, _status| iced::widget::button::Style {
             background: None,
             text_color: MENU_TEXT,
@@ -100,11 +159,13 @@ fn menu_label(label: &str) -> iced::widget::Button<'_, Message> {
         })
 }
 
+// ── Dropdown helpers ──────────────────────────────────────────────────────────
+
 fn dropdown_button(label: &str, msg: Message) -> iced::widget::Button<'_, Message> {
     button(text(label).size(13).color(DROPDOWN_TEXT))
         .width(Length::Fill)
         .on_press(msg)
-        .padding([6, 12])
+        .padding([6u16, 12])
         .style(|_theme, _status| iced::widget::button::Style {
             background: None,
             text_color: DROPDOWN_TEXT,
@@ -121,7 +182,7 @@ fn dropdown_button(label: &str, msg: Message) -> iced::widget::Button<'_, Messag
 fn dropdown_item(label: &str, _enabled: bool) -> iced::widget::Button<'_, Message> {
     button(text(label).size(13).color(DROPDOWN_MUTED))
         .width(Length::Fill)
-        .padding([6, 12])
+        .padding([6u16, 12])
         .style(|_theme, _status| iced::widget::button::Style {
             background: None,
             text_color: DROPDOWN_MUTED,
@@ -136,9 +197,9 @@ fn dropdown_item(label: &str, _enabled: bool) -> iced::widget::Button<'_, Messag
 }
 
 fn separator() -> iced::widget::Container<'static, Message> {
-    container("")
+    container(Space::new())
         .width(Length::Fill)
-        .height(1)
+        .height(Length::Fixed(1.0))
         .style(|_theme| iced::widget::container::Style {
             background: Some(Background::Color(DROPDOWN_BORDER)),
             text_color: None,
